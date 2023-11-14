@@ -47,6 +47,7 @@ object SettingsDownloadScreen : SearchableSettings {
         val downloadPreferences = remember { Injekt.get<DownloadPreferences>() }
         return listOf(
             getDownloadLocationPreference(downloadPreferences = downloadPreferences),
+            getDownloadLocationPreference(downloadPreferences = downloadPreferences, isImage = true),
             Preference.PreferenceItem.SwitchPreference(
                 pref = downloadPreferences.downloadOnlyOverWifi(),
                 title = stringResource(R.string.connected_to_wifi),
@@ -75,9 +76,11 @@ object SettingsDownloadScreen : SearchableSettings {
     @Composable
     private fun getDownloadLocationPreference(
         downloadPreferences: DownloadPreferences,
+        isImage: Boolean = false,
     ): Preference.PreferenceItem.ListPreference<String> {
         val context = LocalContext.current
-        val currentDirPref = downloadPreferences.downloadsDirectory()
+        val currentDirPref = if (isImage) downloadPreferences.imagesDirectory()
+            else downloadPreferences.downloadsDirectory()
         val currentDir by currentDirPref.collectAsState()
 
         val pickLocation = rememberLauncherForActivityResult(
@@ -94,12 +97,12 @@ object SettingsDownloadScreen : SearchableSettings {
             }
         }
 
-        val defaultDirPair = rememberDefaultDownloadDir()
+        val defaultDirPair = if (isImage) rememberDefaultImageDir() else rememberDefaultDownloadDir()
         val customDirEntryKey = currentDir.takeIf { it != defaultDirPair.first } ?: "custom"
 
         return Preference.PreferenceItem.ListPreference(
             pref = currentDirPref,
-            title = stringResource(R.string.pref_download_directory),
+            title = if (!isImage) stringResource(R.string.pref_download_directory) else stringResource(R.string.pref_image_download_directory),
             subtitleProvider = { value, _ ->
                 remember(value) {
                     UniFile.fromUri(context, value.toUri())?.filePath
@@ -127,6 +130,20 @@ object SettingsDownloadScreen : SearchableSettings {
                 File(
                     "${Environment.getExternalStorageDirectory().absolutePath}${File.separator}$appName",
                     "downloads",
+                ),
+            )!!
+            file.uri.toString() to file.filePath!!
+        }
+    }
+
+    @Composable
+    private fun rememberDefaultImageDir(): Pair<String, String> {
+        val appName = stringResource(R.string.app_name)
+        return remember {
+            val file = UniFile.fromFile(
+                File(
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                    appName,
                 ),
             )!!
             file.uri.toString() to file.filePath!!

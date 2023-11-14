@@ -36,6 +36,7 @@ import tachiyomi.core.preference.AndroidPreferenceStore
 import tachiyomi.core.preference.PreferenceStore
 import tachiyomi.core.provider.AndroidBackupFolderProvider
 import tachiyomi.core.provider.AndroidDownloadFolderProvider
+import tachiyomi.core.provider.AndroidImageFolderProvider
 import tachiyomi.data.AndroidDatabaseHandler
 import tachiyomi.data.Database
 import tachiyomi.data.DatabaseHandler
@@ -186,6 +187,8 @@ class PreferenceModule(val application: Application) : InjektModule {
             DownloadPreferences(
                 folderProvider = get<AndroidDownloadFolderProvider>(),
                 preferenceStore = get(),
+                //TODO Change to image class, which crashes for some reason rn
+                imageFolderProvider = get<AndroidDownloadFolderProvider>(),
             )
         }
         addSingletonFactory {
