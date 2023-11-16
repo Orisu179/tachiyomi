@@ -10,15 +10,9 @@ class AndroidImageFolderProvider(
     val context: Context
 ) : FolderProvider {
     override fun directory(): File {
-        val appName = context.getString(R.string.app_name)
         return File(
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).absolutePath + File.separator,
-            appName,
+            context.getString(R.string.app_name),
         )
     }
-
-    override fun path(): String {
-        return directory().toUri().toString()
-    }
-
 }

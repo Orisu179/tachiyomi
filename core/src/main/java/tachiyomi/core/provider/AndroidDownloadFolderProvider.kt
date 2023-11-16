@@ -17,8 +17,4 @@ class AndroidDownloadFolderProvider(
             "downloads",
         )
     }
-
-    override fun path(): String {
-        return directory().toUri().toString()
-    }
 }

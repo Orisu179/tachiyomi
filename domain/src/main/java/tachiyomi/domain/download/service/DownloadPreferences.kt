@@ -5,8 +5,8 @@ import tachiyomi.core.provider.FolderProvider
 
 class DownloadPreferences(
     private val folderProvider: FolderProvider,
-    private val preferenceStore: PreferenceStore,
     private val imageFolderProvider: FolderProvider,
+    private val preferenceStore: PreferenceStore,
 ) {
 
     fun downloadsDirectory() = preferenceStore.getString(

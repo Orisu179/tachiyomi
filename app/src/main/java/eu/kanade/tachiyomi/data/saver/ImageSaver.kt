@@ -64,11 +64,11 @@ class ImageSaver(
         filename: String,
         data: () -> InputStream,
     ): Uri {
-        //TODO: CHANGE THIS TO THE PICTURE DIR
         val pictureDir =
             MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
 
         val imageLocation = (image.location as Location.Pictures).relativePath
+        //TODO: CHANGE THIS TO THE PICTURE DIR
         val relativePath = listOf(
             Environment.DIRECTORY_PICTURES,
             context.getString(R.string.app_name),

@@ -184,11 +184,13 @@ class PreferenceModule(val application: Application) : InjektModule {
             AndroidDownloadFolderProvider(application)
         }
         addSingletonFactory {
+            AndroidImageFolderProvider(application)
+        }
+        addSingletonFactory {
             DownloadPreferences(
                 folderProvider = get<AndroidDownloadFolderProvider>(),
+                imageFolderProvider = get<AndroidImageFolderProvider>(),
                 preferenceStore = get(),
-                //TODO Change to image class, which crashes for some reason rn
-                imageFolderProvider = get<AndroidDownloadFolderProvider>(),
             )
         }
         addSingletonFactory {

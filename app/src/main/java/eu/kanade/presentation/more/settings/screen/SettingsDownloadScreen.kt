@@ -24,6 +24,7 @@ import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.more.settings.widget.TriStateListDialog
 import eu.kanade.tachiyomi.R
 import kotlinx.coroutines.runBlocking
+import tachiyomi.core.preference.Preference as PreferenceData
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.download.service.DownloadPreferences
@@ -46,8 +47,16 @@ object SettingsDownloadScreen : SearchableSettings {
 
         val downloadPreferences = remember { Injekt.get<DownloadPreferences>() }
         return listOf(
-            getDownloadLocationPreference(downloadPreferences = downloadPreferences),
-            getDownloadLocationPreference(downloadPreferences = downloadPreferences, isImage = true),
+            getDownloadLocationPreference(
+                pref = downloadPreferences.downloadsDirectory(),
+                title = stringResource(R.string.pref_download_directory),
+                defaultDir = rememberDefaultDownloadDir(),
+            ),
+            getDownloadLocationPreference(
+                pref = downloadPreferences.imagesDirectory(),
+                title = stringResource(R.string.pref_image_download_directory),
+                defaultDir = rememberDefaultImageDir(),
+            ),
             Preference.PreferenceItem.SwitchPreference(
                 pref = downloadPreferences.downloadOnlyOverWifi(),
                 title = stringResource(R.string.connected_to_wifi),
@@ -75,13 +84,12 @@ object SettingsDownloadScreen : SearchableSettings {
 
     @Composable
     private fun getDownloadLocationPreference(
-        downloadPreferences: DownloadPreferences,
-        isImage: Boolean = false,
+        pref: PreferenceData<String>,
+        title: String,
+        defaultDir: Pair<String, String>,
     ): Preference.PreferenceItem.ListPreference<String> {
         val context = LocalContext.current
-        val currentDirPref = if (isImage) downloadPreferences.imagesDirectory()
-            else downloadPreferences.downloadsDirectory()
-        val currentDir by currentDirPref.collectAsState()
+        val currentDir by pref.collectAsState()
 
         val pickLocation = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenDocumentTree(),
@@ -93,27 +101,26 @@ object SettingsDownloadScreen : SearchableSettings {
                 context.contentResolver.takePersistableUriPermission(uri, flags)
 
                 val file = UniFile.fromUri(context, uri)
-                currentDirPref.set(file.uri.toString())
+                pref.set(file.uri.toString())
             }
         }
 
-        val defaultDirPair = if (isImage) rememberDefaultImageDir() else rememberDefaultDownloadDir()
-        val customDirEntryKey = currentDir.takeIf { it != defaultDirPair.first } ?: "custom"
+        val customDirEntryKey = currentDir.takeIf { it != defaultDir.first } ?: "custom"
 
         return Preference.PreferenceItem.ListPreference(
-            pref = currentDirPref,
-            title = if (!isImage) stringResource(R.string.pref_download_directory) else stringResource(R.string.pref_image_download_directory),
+            pref = pref,
+            title = title,
             subtitleProvider = { value, _ ->
                 remember(value) {
                     UniFile.fromUri(context, value.toUri())?.filePath
                 } ?: stringResource(R.string.invalid_location, value)
             },
             entries = mapOf(
-                defaultDirPair,
+                defaultDir,
                 customDirEntryKey to stringResource(R.string.custom_dir),
             ),
             onValueChanged = {
-                val default = it == defaultDirPair.first
+                val default = it == defaultDir.first
                 if (!default) {
                     pickLocation.launch(null)
                 }

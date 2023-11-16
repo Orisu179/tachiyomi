@@ -17,8 +17,4 @@ class AndroidBackupFolderProvider(
             "backup",
         )
     }
-
-    override fun path(): String {
-        return directory().toUri().toString()
-    }
 }
